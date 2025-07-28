@@ -31,25 +31,18 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
             conn = sqlite3.connect('ned.db')
 
             # SELECT table
-            # cursor = conn.execute("SELECT pod_ip from NEIGHBORS")
-            # SELECT both pod_ip and weight from NEIGHBORS table
-            cursor = conn.execute("SELECT pod_ip, weight from NEIGHBORS")
+            cursor = conn.execute("SELECT pod_ip from NEIGHBORS")
 
             # Clear the existing list to refresh it
             self.susceptible_nodes = []
 
             for row in cursor:
-                # self.susceptible_nodes.append(row[0])
-                self.susceptible_nodes.append((row[0],row[1]))
-            # print(f"self.susceptible_nodes: {self.susceptible_nodes}",flush=True)
+                self.susceptible_nodes.append(row[0])
+            # print(f"self.susceptible_nodes: {self.susceptible_nodes}")
             conn.close()
 
-        # except sqlite3.Error as e:
-        #     print(f"SQLite error: {e}")
         except sqlite3.Error as e:
-            print(f"SQLite error in get_neighbors: {e}", flush=True)
-        except Exception as e:
-            print(f"Unexpected error in get_neighbors: {str(e)}", flush=True)
+            print(f"SQLite error: {e}")
 
     def SendMessage(self, request, context):
 
@@ -61,19 +54,13 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
         sender_id = request.sender_id
         received_timestamp = time.time_ns()
 
-        # Get latency info of each gossip
-        # 0.00ms for self initiated message
-        # Depends on the latency of the current neighbor latency info
-        received_latency = request.latency_ms
-
         # For initiating acknowledgment only
         if sender_id == self.host:
             self.received_message = message
             log_message = (f"Gossip initiated by {self.hostname} ({self.host}) at "
-                           f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(received_timestamp / 1e9))}"
-                           f"with no latency: {received_latency} ms")
+                           f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(received_timestamp / 1e9))}")
             self._log_event(message, sender_id, received_timestamp, None,
-                            received_latency,'initiate',log_message)
+                            'initiate', log_message)
             self.gossip_message(message, sender_id)
             return gossip_pb2.Acknowledgment(details=f"Done propagate! {self.host} received: '{message}'")
 
@@ -81,16 +68,14 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
         # Notify whether accept it or ignore it
         elif self.received_message == message:
             log_message = f"{self.host} ignoring duplicate message: {message} from {sender_id}"
-            self._log_event(message, sender_id, received_timestamp, None,
-                            received_latency,'duplicate', log_message)
+            self._log_event(message, sender_id, received_timestamp, None, 'duplicate', log_message)
             return gossip_pb2.Acknowledgment(details=f"Duplicate message ignored by ({self.host})")
         else:
             self.received_message = message
             propagation_time = (received_timestamp - request.timestamp) / 1e6
             log_message = (f"({self.hostname}({self.host}) received: '{message}' from {sender_id}"
                            f" in {propagation_time:.2f} ms ")
-            self._log_event(message, sender_id, received_timestamp, propagation_time,
-                            received_latency,'received', log_message)
+            self._log_event(message, sender_id, received_timestamp, propagation_time, 'received', log_message)
             # Start gossip only when the node is the gossip initiator itself
             # therefore, only one iteration is required
 
@@ -100,52 +85,32 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
             return gossip_pb2.Acknowledgment(details=f"{self.host} received: '{message}'")
 
     def gossip_message(self, message, sender_ip):
-        """
-        Propagates the message to susceptible (neighboring) nodes.
-        Excludes the sender from forwarding.
-        """
-        # This function objective is to send message to all neighbor nodes.
-        # In real environment, suppose we should get latency from
-        # networking tools such as iperf. But it will be included in
-        # future work. For the sake of this simulation, we will get
-        # neighbor latency based by providing delay using the pre-defined
-        # latency value. Formula: time.sleep(latency_ms/1000)
-        # For now, the weight is latency
-
         # Refresh list of neighbors before gossiping to capture any changes
-        # Ensure neighbors are loaded if the list is empty at this point
-        if not self.susceptible_nodes:
+        if len(self.susceptible_nodes) == 0:
             self.get_neighbors()
-            print(f"self.susceptible_nodes: {self.susceptible_nodes}", flush=True)
+        print(f"self.susceptible_nodes: {self.susceptible_nodes}",flush=True)
 
-        # Loop through (peer_ip, peer_weight) tuples
-        for peer_ip, peer_weight in self.susceptible_nodes:
+
+        # for peer_name, peer_ip in self.susceptible_nodes: # we don't need hostname yet
+        for peer_ip in self.susceptible_nodes:
             # Exclude the sender from the list of nodes to forward the message to
             if peer_ip != sender_ip:
 
                 # Record the send timestamp
                 send_timestamp = time.time_ns()
 
-                # Introduce latency here
-                time.sleep(int(peer_weight) / 1000)
-
-                try:
-                    # Establish gRPC channel to the peer
-                    # The weight (peer_weight) is not part of the message payload as per current proto
-                    with grpc.insecure_channel(f"{peer_ip}:5050") as channel:
+                with grpc.insecure_channel(f"{peer_ip}:5050") as channel:
+                    try:
                         stub = gossip_pb2_grpc.GossipServiceStub(channel)
                         stub.SendMessage(gossip_pb2.GossipMessage(
                             message=message,
-                            sender_id=self.host,  # This node's IP is the sender for the next hop
+                            sender_id=self.host,
                             timestamp=send_timestamp,
-                            latency_ms=peer_weight  # Pass the weight of the link as latency_ms (in milisecond)
                         ))
-                except grpc.RpcError as e:
-                    print(f"Failed to send message: '{message}' to {peer_ip}: {e.code()} - {e.details()}", flush=True)
-                except Exception as e:
-                    print(f"Unexpected error when sending message to {peer_ip}: {str(e)}", flush=True)
+                    except grpc.RpcError as e:
+                        print(f"Failed to send message: '{message}' to {peer_ip}: {e}", flush=True)
 
-    def _log_event(self, message, sender_id, received_timestamp, propagation_time, latency_ms, event_type, log_message):
+    def _log_event(self, message, sender_id, received_timestamp, propagation_time, event_type, log_message):
         """Logs the gossip event as structured JSON data."""
         event_data = {
             'message': message,
@@ -153,7 +118,6 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
             'receiver_id': self.host,
             'received_timestamp': received_timestamp,
             'propagation_time': propagation_time,
-            'latency_ms': latency_ms,
             'event_type': event_type,
             'detail': log_message
         }

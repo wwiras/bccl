@@ -6,6 +6,7 @@ message GossipMessage {
   string message = 1;  // The message content
   string sender_id = 2;  // The ID of the sender
   int64 timestamp = 3;  // Timestamp of the message
+  float latency_ms = 4; // Weight or latency for the neighbor
 }
 
 message Acknowledgment {
