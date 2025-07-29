@@ -121,8 +121,94 @@ Successfully created new overlay topology file at: topology/nodes10_Jul262025125
 
 ```
 
-### Step 3 - Test Newly Generated Agglomerative Clustering (AC) in the simulator
-The input are BA topology (json) and M total clusters. Once AC processed completed, a new overlay network
-is generated in json file. This new file name is formatted by combining its original filename plus "AC"
-in the end. In the example above, the new json file (overlay network) is "nodes10_Jul262025125801_BA5_AC.json" .
+### Step 4 - Prepare Cloud Native Infrastructure (Starting a GKE cluster)
+This a must do step. Since we are going to use GKE for our test, a GKE cluster must be ready. 
+Here are the specification used for this test.
+
+| Features/Specification | Description          |
+|------------------------|----------------------|
+| Name	                  | bcgossip-cluster     |	
+| Tier 	                 | Standard             |	
+| Mode 	                 | Standard             |	
+| Location type          | 	Zonal               |	
+| Control plane zone     | 	us-central1-a       |	
+| Default node zones     | 	us-central1-a       |
+| Total size             | 	36                  |	
+| Release channel        | 	Regular channel     |	
+| Version                | 	1.33.2-gke.1111000  |	
+| Current COS version    | 	cos-121-18867-90-62 |
+| Total vCPUs            | 	72                  |
+| Total Memory           | 	144 GB              |
+
+
+### Step 5 - Mimicking BA or Clustering Topology (from Step 2)
+Once GKE cluster is ready, Prepare the topology from the output of Step2. The command is shown below.
 ```shell
+$ python prepare.py --filename nodes1000_Jul282025005524_BA5.json
+Deployment number of nodes equal to topology nodes: 1000
+
+Starting update for 1000 pods (timeout: 300s, max retries: 3)...
+Progress: 2.9% | Elapsed: 67.9s | Success: 29/1000 | Failed: 0 | Retries pending: 0
+Progress: 8.6% | Elapsed: 199.9s | Success: 86/1000 | Failed: 0 | Retries pending: 0
+Progress: 15.1% | Elapsed: 350.0s | Success: 151/1000 | Failed: 0 | Retries pending: 0
+Progress: 19.8% | Elapsed: 458.9s | Success: 198/1000 | Failed: 0 | Retries pending: 0
+Progress: 28.3% | Elapsed: 655.7s | Success: 283/1000 | Failed: 0 | Retries pending: 0
+Progress: 40.0% | Elapsed: 926.0s | Success: 400/1000 | Failed: 0 | Retries pending: 0
+Progress: 56.6% | Elapsed: 1308.7s | Success: 566/1000 | Failed: 0 | Retries pending: 0
+Progress: 68.9% | Elapsed: 1594.1s | Success: 689/1000 | Failed: 0 | Retries pending: 0
+Progress: 76.9% | Elapsed: 1779.1s | Success: 769/1000 | Failed: 0 | Retries pending: 0
+Progress: 79.0% | Elapsed: 1827.6s | Success: 790/1000 | Failed: 0 | Retries pending: 0
+Progress: 83.0% | Elapsed: 1919.8s | Success: 830/1000 | Failed: 0 | Retries pending: 0
+Progress: 94.8% | Elapsed: 2193.5s | Success: 948/1000 | Failed: 0 | Retries pending: 0
+Progress: 100.0% | Elapsed: 2313.9s | Success: 1000/1000 | Failed: 0 | Retries pending: 0
+
+Update completed in 2313.9 seconds
+Summary - Total: 1000 | Success: 1000 | Failed: 0
+Platform is now ready for testing..!
+```
+
+### Step 6 - Test the BA / Newly Generated Agglomerative Clustering (AC) in the simulator
+Next we need to test the propagation time of the topology chosen from previous step (Step 5). Here is the command. Just specify the total number of tests.
+```shell
+$ python3 automate.py --num_tests 11
+self.num_tests=11
+Number of running pods (num_nodes): 1000
+Checking for pods in namespace default...
+All 1000 pods are up and running in namespace default.
+Selected pod: gossip-dpymt-86dfccf48c-hlxq5
+{"event": "gossip_start", "pod_name": "gossip-dpymt-86dfccf48c-hlxq5", "message": "cd8c-cubaan1000-1", "start_time": "2025/07/29 13:54:32", "details": "Gossip propagation started for message: cd8c-cubaan1000-1"}
+host_ip=10.40.33.16
+
+target=10.40.33.16:5050
+
+Sending message to self (10.40.33.16): 'cd8c-cubaan1000-1' with latency=0.0 ms
+
+
+Received acknowledgment: Done propagate! 10.40.33.16 received: 'cd8c-cubaan1000-1'
+
+{"event": "gossip_end", "pod_name": "gossip-dpymt-86dfccf48c-hlxq5", "message": "cd8c-cubaan1000-1", "end_time": "2025/07/29 14:01:31", "details": "Gossip propagation completed for message: cd8c-cubaan1000-1"}
+Test 1 complete.
+Selected pod: gossip-dpymt-86dfccf48c-hlxq5
+{"event": "gossip_start", "pod_name": "gossip-dpymt-86dfccf48c-hlxq5", "message": "cd8c-cubaan1000-2", "start_time": "2025/07/29 14:01:36", "details": "Gossip propagation started for message: cd8c-cubaan1000-2"}
+host_ip=10.40.33.16
+
+target=10.40.33.16:5050
+
+...
+...
+...
+
+Selected pod: gossip-dpymt-86dfccf48c-hlxq5
+{"event": "gossip_start", "pod_name": "gossip-dpymt-86dfccf48c-hlxq5", "message": "cd8c-cubaan1000-11", "start_time": "2025/07/29 15:03:26", "details": "Gossip propagation started for message: cd8c-cubaan1000-11"}
+host_ip=10.40.33.16
+
+target=10.40.33.16:5050
+
+Sending message to self (10.40.33.16): 'cd8c-cubaan1000-11' with latency=0.0 ms
+
+Received acknowledgment: Done propagate! 10.40.33.16 received: 'cd8c-cubaan1000-11'
+
+{"event": "gossip_end", "pod_name": "gossip-dpymt-86dfccf48c-hlxq5", "message": "cd8c-cubaan1000-11", "end_time": "2025/07/29 15:10:14", "details": "Gossip propagation completed for message: cd8c-cubaan1000-11"}
+Test 11 complete.
+
+```
