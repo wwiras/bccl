@@ -104,8 +104,8 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
         """
         if not self.susceptible_nodes:
             self.get_neighbors()
-
-        # print(f"self.susceptible_nodes: {self.susceptible_nodes}", flush=True) # For debugging
+            # For topology debugging or info
+            print(f"self.susceptible_nodes: {self.susceptible_nodes}", flush=True)
 
         futures_list = []
         for peer_ip, peer_weight in self.susceptible_nodes:
