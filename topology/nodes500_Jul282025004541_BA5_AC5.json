@@ -4002,5 +4002,8 @@
     }
   ],
   "total_clusters": 5,
-  "clustering_time_ms": "13192.9462"
+  "clustering_time_ms": "13192.9462",
+  "total_edges": 499,
+  "total_nodes": 500,
+  "weight_average": "18.4689"
 }

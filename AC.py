@@ -349,6 +349,13 @@ if __name__ == "__main__":
             target_id = index_to_id[target_index]
             edges_list.append({"source": source_id, "target": target_id, "weight": weight})
 
+        # Calculate weight_average
+        if edges_list:
+            total_weight = sum(edge.get("weight", 0) for edge in edges_list)
+            weight_average = total_weight / len(edges_list)
+        else:
+            weight_average = 0.0  # Handle case with no edges to avoid division by zero
+
         new_topology = {
             "directed": False,
             "multigraph": False,
@@ -356,7 +363,10 @@ if __name__ == "__main__":
             "nodes": nodes_list,
             "edges": edges_list,
             "total_clusters": M,
-            "clustering_time_ms": f"{clustering_time_ms:.4f}"
+            "clustering_time_ms": f"{clustering_time_ms:.4f}",
+            "total_nodes": len(nodes_list),
+            "total_edges": len(edges_list),
+            "weight_average": f"{weight_average:.4f}"
         }
 
         with open(new_file_path, 'w') as f:
