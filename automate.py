@@ -124,7 +124,10 @@ class Test:
 
         try:
             start_time = self._get_malaysian_time().strftime('%Y/%m/%d %H:%M:%S')
-            message = f'{unique_id}-cubaan{replicas}-{iteration}'
+            if unique_id == '#update$':
+                message = unique_id
+            else:
+                message = f'{unique_id}-cubaan{replicas}-{iteration}'
             start_log = {
                 'event': 'gossip_start',
                 'pod_name': pod_name,
@@ -186,8 +189,15 @@ class Test:
 if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser(description="Usage: python automate.py --num_tests <number_of_tests>")
-    parser.add_argument('--num_tests', required=True, type=int, help="Total number of tests to do")
+    # parser.add_argument('--num_tests', required=True, type=int, help="Total number of tests to do")
+    parser.add_argument('--num_tests', default='#update$', help="Total number of tests to do")
     args = parser.parse_args()
+
+    if args.num_tests == '#update$':
+        update_uuid = args.num_tests
+        args.num_tests = 1
+    else:
+        update_uuid = False
 
     # Check num test validity
     if args.num_tests >= 0 or not args.num_tests.isdigit():
@@ -206,7 +216,10 @@ if __name__ == '__main__':
 
     # Wait for pods to be ready
     if test.wait_for_pods_to_be_ready(namespace='default', expected_pods=int(test.num_nodes), timeout=1000):
-        unique_id = str(uuid.uuid4())[:4]
+        if update_uuid:
+            unique_id = update_uuid
+        else:
+            unique_id = str(uuid.uuid4())[:4]
 
         # Test iteration starts here
         pod_name = test.select_random_pod()
