@@ -1,12 +1,10 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
 import json
 import subprocess
 import sys
 import os
 import time
-# import sqlite3  # Add sqlite3 import for direct schema reference
-
+import sqlite3  # Add sqlite3 import for direct schema reference
 
 
 def get_pod_topology(topology_folder, filename):
@@ -228,187 +226,88 @@ except Exception as e:
         return False, f"Unexpected error in update_pod_neighbors: {str(e)}"
 
 
-def update_all_pods(pod_mapping, max_retries=3, initial_timeout=300, max_concurrent_updates=10):
+def update_all_pods(pod_mapping, max_retries=3, initial_timeout=300):
     """
-    Update neighbors for all pods with extended timeout and retry capabilities,
-    now with parallel execution.
+    Update neighbors for all pods with extended timeout and retry capabilities
 
     Args:
         pod_mapping: Dictionary of pod to neighbors mapping
         max_retries: Number of retry attempts for failed updates
         initial_timeout: Initial timeout in seconds (will increase with retries)
-        max_concurrent_updates: Max number of kubectl exec calls to run in parallel
     """
     pod_list = list(pod_mapping.keys())
     total_pods = len(pod_list)
     success_count = 0
     failure_count = 0
     start_time = time.time()
-    retry_queue = []  # Stores (pod, neighbors, retry_count, future_obj)
+    retry_queue = []
 
-    print(
-        f"\nStarting update for {total_pods} pods (timeout: {initial_timeout}s, max retries: {max_retries}, concurrent: {max_concurrent_updates})...")
+    print(f"\nStarting update for {total_pods} pods (timeout: {initial_timeout}s, max retries: {max_retries})...")
 
-    with ThreadPoolExecutor(max_workers=max_concurrent_updates) as executor:
-        futures_to_pod = {
-            executor.submit(update_pod_neighbors, pod, pod_mapping.get(pod, []), initial_timeout): pod
-            for pod in pod_list
-        }
+    # First attempt
+    for i, pod in enumerate(pod_list, 1):
+        neighbors = pod_mapping.get(pod, [])
+        timeout = initial_timeout
 
-        # Track results of initial attempts
-        for future in as_completed(futures_to_pod):
-            pod = futures_to_pod[future]
-            try:
-                success, output = future.result()
-                if success:
-                    success_count += 1
-                else:
-                    retry_queue.append((pod, pod_mapping.get(pod, []), 1))
-                    failure_count += 1
-                    print(f"\nInitial attempt failed for {pod}: {output}")
-            except Exception as exc:
-                retry_queue.append((pod, pod_mapping.get(pod, []), 1))
-                failure_count += 1
-                print(f"\nInitial attempt for {pod} generated an exception: {exc}")
+        success, output = update_pod_neighbors(pod, neighbors, timeout)
 
-            # Progress reporting (updated to reflect completion of futures)
-            elapsed = time.time() - start_time
-            progress = (success_count + failure_count) / total_pods * 100  # Corrected progress calc
-            print(
-                f"\rProgress: {progress:.1f}% | "
-                f"Elapsed: {elapsed:.1f}s | "
-                f"Success: {success_count}/{total_pods} | "
-                f"Failed: {failure_count} | "
-                f"Retries pending: {len(retry_queue)}",
-                end='', flush=True
-            )
+        if success:
+            success_count += 1
+        else:
+            retry_queue.append((pod, neighbors, 1))  # Track retry count
+            failure_count += 1
+            print(f"\nInitial attempt failed for {pod}: {output}")
 
-        # Retry logic
-        while retry_queue and (time.time() - start_time) < 3600:
-            pod_to_retry, neighbors_to_retry, retry_count = retry_queue.pop(0)
+        # Progress reporting
+        elapsed = time.time() - start_time
+        progress = (i / total_pods) * 100
+        print(
+            f"\rProgress: {progress:.1f}% | "
+            f"Elapsed: {elapsed:.1f}s | "
+            f"Success: {success_count}/{total_pods} | "
+            f"Failed: {failure_count} | "
+            f"Retries pending: {len(retry_queue)}",
+            end='', flush=True
+        )
 
-            if retry_count > max_retries:
-                print(f"\nMax retries exceeded for {pod_to_retry}")
-                continue  # Skip if max retries reached
+    # Retry logic
+    while retry_queue and (time.time() - start_time) < 3600:  # 1 hour max total runtime
+        pod, neighbors, retry_count = retry_queue.pop(0)
+        timeout = initial_timeout * (retry_count + 1)  # Exponential backoff
 
-            timeout = initial_timeout * (retry_count + 1)
-            print(f"\nRetry #{retry_count} for {pod_to_retry} (timeout: {timeout}s)...", flush=True)
+        print(f"\nRetry #{retry_count} for {pod} (timeout: {timeout}s)...")
+        success, output = update_pod_neighbors(pod, neighbors, timeout)
 
-            retry_future = executor.submit(update_pod_neighbors, pod_to_retry, neighbors_to_retry, timeout)
+        if success:
+            success_count += 1
+            failure_count -= 1
+        elif retry_count < max_retries:
+            retry_queue.append((pod, neighbors, retry_count + 1))
+            print(f"Retry failed for {pod}: {output}")
+        else:
+            print(f"Max retries exceeded for {pod}")
 
-            try:
-                success, output = retry_future.result()  # Wait for this specific retry
-                if success:
-                    success_count += 1
-                    failure_count -= 1  # Decrement failure count as it's now a success
-                else:
-                    retry_queue.append((pod_to_retry, neighbors_to_retry, retry_count + 1))
-                    print(f"Retry failed for {pod_to_retry}: {output}")
-            except Exception as exc:
-                retry_queue.append((pod_to_retry, neighbors_to_retry, retry_count + 1))
-                print(f"Retry for {pod_to_retry} generated an exception: {exc}")
+        # Update progress
+        elapsed = time.time() - start_time
+        # Recalculate progress based on success_count for remaining total pods
+        current_total = success_count + failure_count + len(retry_queue)
+        progress = (success_count / total_pods) * 100 if total_pods > 0 else 0
 
-            # Update progress after each retry completes
-            elapsed = time.time() - start_time
-            progress = (success_count + failure_count) / total_pods * 100  # Corrected progress calc
-            print(
-                f"\rProgress: {progress:.1f}% | "
-                f"Elapsed: {elapsed:.1f}s | "
-                f"Success: {success_count}/{total_pods} | "
-                f"Failed: {failure_count} | "
-                f"Retries pending: {len(retry_queue)}",
-                end='', flush=True
-            )
+        print(
+            f"\rProgress: {progress:.1f}% | "
+            f"Elapsed: {elapsed:.1f}s | "
+            f"Success: {success_count}/{total_pods} | "
+            f"Failed: {failure_count} | "
+            f"Retries pending: {len(retry_queue)}",
+            end='', flush=True
+        )
 
-    # Final summary (unchanged)
+    # Final summary
     total_time = time.time() - start_time
     print(f"\n\nUpdate completed in {total_time:.1f} seconds")
     print(f"Summary - Total: {total_pods} | Success: {success_count} | Failed: {failure_count}")
 
     return success_count == total_pods
-
-# def update_all_pods(pod_mapping, max_retries=3, initial_timeout=300):
-#     """
-#     Update neighbors for all pods with extended timeout and retry capabilities
-#
-#     Args:
-#         pod_mapping: Dictionary of pod to neighbors mapping
-#         max_retries: Number of retry attempts for failed updates
-#         initial_timeout: Initial timeout in seconds (will increase with retries)
-#     """
-#     pod_list = list(pod_mapping.keys())
-#     total_pods = len(pod_list)
-#     success_count = 0
-#     failure_count = 0
-#     start_time = time.time()
-#     retry_queue = []
-#
-#     print(f"\nStarting update for {total_pods} pods (timeout: {initial_timeout}s, max retries: {max_retries})...")
-#
-#     # First attempt
-#     for i, pod in enumerate(pod_list, 1):
-#         neighbors = pod_mapping.get(pod, [])
-#         timeout = initial_timeout
-#
-#         success, output = update_pod_neighbors(pod, neighbors, timeout)
-#
-#         if success:
-#             success_count += 1
-#         else:
-#             retry_queue.append((pod, neighbors, 1))  # Track retry count
-#             failure_count += 1
-#             print(f"\nInitial attempt failed for {pod}: {output}")
-#
-#         # Progress reporting
-#         elapsed = time.time() - start_time
-#         progress = (i / total_pods) * 100
-#         print(
-#             f"\rProgress: {progress:.1f}% | "
-#             f"Elapsed: {elapsed:.1f}s | "
-#             f"Success: {success_count}/{total_pods} | "
-#             f"Failed: {failure_count} | "
-#             f"Retries pending: {len(retry_queue)}",
-#             end='', flush=True
-#         )
-#
-#     # Retry logic
-#     while retry_queue and (time.time() - start_time) < 3600:  # 1 hour max total runtime
-#         pod, neighbors, retry_count = retry_queue.pop(0)
-#         timeout = initial_timeout * (retry_count + 1)  # Exponential backoff
-#
-#         print(f"\nRetry #{retry_count} for {pod} (timeout: {timeout}s)...")
-#         success, output = update_pod_neighbors(pod, neighbors, timeout)
-#
-#         if success:
-#             success_count += 1
-#             failure_count -= 1
-#         elif retry_count < max_retries:
-#             retry_queue.append((pod, neighbors, retry_count + 1))
-#             print(f"Retry failed for {pod}: {output}")
-#         else:
-#             print(f"Max retries exceeded for {pod}")
-#
-#         # Update progress
-#         elapsed = time.time() - start_time
-#         # Recalculate progress based on success_count for remaining total pods
-#         current_total = success_count + failure_count + len(retry_queue)
-#         progress = (success_count / total_pods) * 100 if total_pods > 0 else 0
-#
-#         print(
-#             f"\rProgress: {progress:.1f}% | "
-#             f"Elapsed: {elapsed:.1f}s | "
-#             f"Success: {success_count}/{total_pods} | "
-#             f"Failed: {failure_count} | "
-#             f"Retries pending: {len(retry_queue)}",
-#             end='', flush=True
-#         )
-#
-#     # Final summary
-#     total_time = time.time() - start_time
-#     print(f"\n\nUpdate completed in {total_time:.1f} seconds")
-#     print(f"Summary - Total: {total_pods} | Success: {success_count} | Failed: {failure_count}")
-#
-#     return success_count == total_pods
 
 
 if __name__ == "__main__":
