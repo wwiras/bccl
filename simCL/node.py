@@ -114,7 +114,7 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
 
         # Refresh list of neighbors before gossiping to capture any changes
         # Ensure neighbors are loaded if the list is empty at this point
-        if not self.susceptible_nodes or message == "#update$":
+        if not self.susceptible_nodes:
             self.get_neighbors()
             print(f"self.susceptible_nodes: {self.susceptible_nodes}", flush=True)
 

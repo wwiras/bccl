@@ -102,7 +102,7 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
         """
         Propagates the message to susceptible (neighboring) nodes using a thread pool.
         """
-        if not self.susceptible_nodes or message == "#update$":
+        if not self.susceptible_nodes:
             self.get_neighbors()
             # For topology debugging or info
             print(f"self.susceptible_nodes: {self.susceptible_nodes}", flush=True)
