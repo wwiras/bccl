@@ -3,6 +3,7 @@
 import grpc
 import warnings
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 import gossip_pb2 as gossip__pb2
 
 GRPC_GENERATED_VERSION = '1.74.0'
@@ -39,6 +40,11 @@ class GossipServiceStub(object):
                 request_serializer=gossip__pb2.GossipMessage.SerializeToString,
                 response_deserializer=gossip__pb2.Acknowledgment.FromString,
                 _registered_method=True)
+        self.UpdateNeighbors = channel.unary_unary(
+                '/gossip.GossipService/UpdateNeighbors',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=gossip__pb2.Acknowledgment.FromString,
+                _registered_method=True)
 
 
 class GossipServiceServicer(object):
@@ -50,12 +56,24 @@ class GossipServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateNeighbors(self, request, context):
+        """<-- Add this new RPC
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_GossipServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'SendMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.SendMessage,
                     request_deserializer=gossip__pb2.GossipMessage.FromString,
+                    response_serializer=gossip__pb2.Acknowledgment.SerializeToString,
+            ),
+            'UpdateNeighbors': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateNeighbors,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=gossip__pb2.Acknowledgment.SerializeToString,
             ),
     }
@@ -85,6 +103,33 @@ class GossipService(object):
             target,
             '/gossip.GossipService/SendMessage',
             gossip__pb2.GossipMessage.SerializeToString,
+            gossip__pb2.Acknowledgment.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateNeighbors(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/gossip.GossipService/UpdateNeighbors',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             gossip__pb2.Acknowledgment.FromString,
             options,
             channel_credentials,
