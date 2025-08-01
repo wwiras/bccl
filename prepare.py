@@ -5,10 +5,6 @@ import subprocess
 import sys
 import os
 import time
-import grpc
-import gossip_pb2
-import gossip_pb2_grpc
-from google.protobuf.empty_pb2 import Empty
 
 
 def get_pod_topology(topology_folder, filename):
