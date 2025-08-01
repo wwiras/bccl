@@ -5,12 +5,10 @@ import subprocess
 import sys
 import os
 import time
-import grpc
-import simCL.gossip_pb2
-import simCL.gossip_pb2_grpc
+# import grpc
 # import gossip_pb2
 # import gossip_pb2_grpc
-from google.protobuf.empty_pb2 import Empty
+# from google.protobuf.empty_pb2 import Empty
 
 
 def get_pod_topology(topology_folder, filename):
@@ -178,27 +176,49 @@ except Exception as e:
         return False, f"Unexpected error in update_pod_neighbors: {str(e)}"
 
 
-def notify_pod_for_update(pod_ip, timeout=5):
+def notify_pod_via_exec(pod, timeout=5):
     """
-    Makes a gRPC call to a pod to signal it to update its neighbor list.
+    Uses kubectl exec to run a script inside the pod that makes a gRPC call to localhost.
+    This sidesteps local Python dependency issues.
     """
     try:
-        with grpc.insecure_channel(f"{pod_ip}:5050", options=[('grpc.so_reuseport', 0)]) as channel:
-            # stub = gossip_pb2_grpc.GossipServiceStub(channel)
-            stub = simCL.gossip_pb2_grpc.GossipServiceStub(channel)
-            stub.UpdateNeighbors(Empty(), timeout=timeout)
-        return True, "Update signal sent successfully."
-    except grpc.RpcError as e:
-        return False, f"RPC call failed with code {e.code()}: {e.details()}"
+        # A simple Python script that makes a gRPC call to the local pod
+        python_script = f"""
+import grpc
+import gossip_pb2
+import gossip_pb2_grpc
+from google.protobuf.empty_pb2 import Empty
+
+try:
+    with grpc.insecure_channel('localhost:5050') as channel:
+        stub = gossip_pb2_grpc.GossipServiceStub(channel)
+        stub.UpdateNeighbors(Empty(), timeout=5)
+    print("UpdateNeighbors signal sent successfully via exec.")
+except Exception as e:
+    print(f"Error sending gRPC signal from inside pod: {{str(e)}}")
+    raise
+"""
+        cmd = [
+            'kubectl', 'exec', pod,
+            '--', 'python3', '-c', python_script
+        ]
+
+        result = subprocess.run(cmd, check=True, text=True, capture_output=True, timeout=timeout)
+        return True, result.stdout.strip()
+
+    except subprocess.CalledProcessError as e:
+        return False, f"Command failed (exit {e.returncode}): {e.stderr.strip()}"
+    except subprocess.TimeoutExpired:
+        return False, f"Command timed out after {timeout} seconds"
     except Exception as e:
-        return False, f"Unexpected error while sending update signal: {str(e)}"
+        return False, f"Unexpected error in notify_pod_via_exec: {str(e)}"
 
 
 def update_all_pods(pod_mapping, pod_dplymt, max_retries=3, initial_timeout=300, max_concurrent_updates=10):
     """
     Performs a two-phase update on all pods:
     1. Updates the SQLite DB in parallel for all pods.
-    2. Sends a gRPC notification in parallel to all updated pods.
+    2. Sends a signal in parallel via kubectl exec to all updated pods.
     """
     pod_list = list(pod_mapping.keys())
     total_pods = len(pod_list)
@@ -224,14 +244,13 @@ def update_all_pods(pod_mapping, pod_dplymt, max_retries=3, initial_timeout=300,
     print(f"\nDB update phase complete in {time.time() - start_time:.1f} seconds. Success: {db_success_count}, Failed: {db_failure_count}")
 
     if db_success_count == 0:
-        print("No successful DB updates. Skipping gRPC notification phase.")
+        print("No successful DB updates. Skipping notification phase.")
         return False
 
-    print(f"\nStarting gRPC notification for {db_success_count} pods...")
+    print(f"\nStarting notification for {db_success_count} pods...")
     with ThreadPoolExecutor(max_workers=max_concurrent_updates) as executor:
-        pod_ip_map = {name: ip for _, name, ip in pod_dplymt}
         notify_futures = {
-            executor.submit(notify_pod_for_update, pod_ip_map.get(pod_name)): pod_name
+            executor.submit(notify_pod_via_exec, pod_name): pod_name
             for pod_name, (success, _) in db_update_results.items() if success
         }
         for future in as_completed(notify_futures):
@@ -274,23 +293,4 @@ if __name__ == "__main__":
             if pod_dplymt:
                 pod_mapping = get_pod_mapping(pod_dplymt, pod_neighbors, pod_topology)
 
-                if pod_mapping:
-                    if update_all_pods(pod_mapping, pod_dplymt, max_concurrent_updates=20):
-                        prepare = True
-                else:
-                    print("Error: Could not create pod mapping.", flush=True)
-            else:
-                print("Error: Could not retrieve pod deployment information.", flush=True)
-        elif nodes_topology == 0:
-            print("Error: Topology file contains no nodes.", flush=True)
-            sys.exit(1)
-        else:
-            print(
-                f"Error: Deployment number of nodes ({nodes_dplymt}) and topology nodes ({nodes_topology}) must be equal.",
-                flush=True)
-            sys.exit(1)
-
-    if prepare:
-        print("Platform is now ready for testing..!")
-    else:
-        print("Platform could not be ready due to errors.")
+                if pod_mapping
