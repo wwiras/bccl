@@ -4,7 +4,7 @@ import grpc
 import warnings
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-import gossip_pb2 as gossip__pb2
+from simCL import gossip_pb2 as simCL_dot_gossip__pb2
 
 GRPC_GENERATED_VERSION = '1.74.0'
 GRPC_VERSION = grpc.__version__
@@ -19,7 +19,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in gossip_pb2_grpc.py depends on'
+        + f' but the generated code in simCL/gossip_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -37,13 +37,13 @@ class GossipServiceStub(object):
         """
         self.SendMessage = channel.unary_unary(
                 '/gossip.GossipService/SendMessage',
-                request_serializer=gossip__pb2.GossipMessage.SerializeToString,
-                response_deserializer=gossip__pb2.Acknowledgment.FromString,
+                request_serializer=simCL_dot_gossip__pb2.GossipMessage.SerializeToString,
+                response_deserializer=simCL_dot_gossip__pb2.Acknowledgment.FromString,
                 _registered_method=True)
         self.UpdateNeighbors = channel.unary_unary(
                 '/gossip.GossipService/UpdateNeighbors',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=gossip__pb2.Acknowledgment.FromString,
+                response_deserializer=simCL_dot_gossip__pb2.Acknowledgment.FromString,
                 _registered_method=True)
 
 
@@ -68,13 +68,13 @@ def add_GossipServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'SendMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.SendMessage,
-                    request_deserializer=gossip__pb2.GossipMessage.FromString,
-                    response_serializer=gossip__pb2.Acknowledgment.SerializeToString,
+                    request_deserializer=simCL_dot_gossip__pb2.GossipMessage.FromString,
+                    response_serializer=simCL_dot_gossip__pb2.Acknowledgment.SerializeToString,
             ),
             'UpdateNeighbors': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateNeighbors,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=gossip__pb2.Acknowledgment.SerializeToString,
+                    response_serializer=simCL_dot_gossip__pb2.Acknowledgment.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -102,8 +102,8 @@ class GossipService(object):
             request,
             target,
             '/gossip.GossipService/SendMessage',
-            gossip__pb2.GossipMessage.SerializeToString,
-            gossip__pb2.Acknowledgment.FromString,
+            simCL_dot_gossip__pb2.GossipMessage.SerializeToString,
+            simCL_dot_gossip__pb2.Acknowledgment.FromString,
             options,
             channel_credentials,
             insecure,
@@ -130,7 +130,7 @@ class GossipService(object):
             target,
             '/gossip.GossipService/UpdateNeighbors',
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            gossip__pb2.Acknowledgment.FromString,
+            simCL_dot_gossip__pb2.Acknowledgment.FromString,
             options,
             channel_credentials,
             insecure,
