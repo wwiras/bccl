@@ -18,4 +18,5 @@ COPY .. /app
 EXPOSE 5050
 
 # Command to run the application
-CMD ["python3", "node_future.py"]
+#CMD ["python3", "node_future.py"]
+CMD ["python3", "node_future2.py"]
