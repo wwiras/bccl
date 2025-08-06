@@ -45,6 +45,10 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
             for row in cursor:
                 self.susceptible_nodes.append((row[0], row[1]))  # Append as (IP, weight) tuple
             conn.close()
+
+            # Add a log message to confirm the state refresh
+            print(f"Neighbors list refreshed from ned.db. Found {len(self.susceptible_nodes)} neighbors.", flush=True)
+
         except sqlite3.Error as e:
             print(f"SQLite error in get_neighbors: {e}", flush=True)
         except Exception as e:
@@ -89,31 +93,68 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
 
             return gossip_pb2.Acknowledgment(details=f"{self.host} received: '{message}'")
 
+    # Updated _send_gossip_to_peer function for validation
     async def _send_gossip_to_peer(self, message, sender_id, peer_ip, peer_weight):
-        """
-        Helper function to send a single gossip message to a peer, simulating latency.
-        This is now an async function.
-        """
+        """Helper function to send a single gossip message to a peer, simulating latency."""
         send_timestamp = time.time_ns()
-        try:
-            # Introduce latency here: use asyncio.sleep for non-blocking delay
-            await asyncio.sleep(int(peer_weight) / 1000)  # peer_weight is in ms, asyncio.sleep expects seconds
 
-            # Use grpc.aio.insecure_channel for asynchronous channel
+        try:
+            # ---- VALIDATION LOGGING START ----
+            # Log the exact time before the sleep
+            sleep_start_time = time.perf_counter_ns()
+            # --- END VALIDATION LOGGING ---
+
+            # Introduce latency here: use asyncio.sleep for non-blocking delay
+            await asyncio.sleep(int(peer_weight) / 1000)
+
+            # ---- VALIDATION LOGGING START ----
+            sleep_end_time = time.perf_counter_ns()
+            simulated_delay = (sleep_end_time - sleep_start_time) / 1e6
+            # Log the actual sleep time vs. the expected sleep time
+            print(f"DEBUG: Simulating delay for {peer_ip}. Expected: {peer_weight:.2f}ms, Actual: {simulated_delay:.2f}ms", flush=True)
+            # --- END VALIDATION LOGGING ---
+
             async with grpc.aio.insecure_channel(f"{peer_ip}:5050") as channel:
                 stub = gossip_pb2_grpc.GossipServiceStub(channel)
-                # Await the asynchronous SendMessage call
                 await stub.SendMessage(gossip_pb2.GossipMessage(
                     message=message,
                     sender_id=self.host,
                     timestamp=send_timestamp,
                     latency_ms=peer_weight
                 ))
-        except grpc.aio.AioRpcError as e:  # Catch gRPC AIO specific errors
+        except grpc.aio.AioRpcError as e:
             print(f"Failed to send message: '{message}' to {peer_ip}: RPC Error Code {e.code()} - {e.details()}",
                   flush=True)
         except Exception as e:
             print(f"Unexpected error when sending message to {peer_ip}: {str(e)}", flush=True)
+
+    # Note: The debug prints are commented out for production runs.
+
+    # async def _send_gossip_to_peer(self, message, sender_id, peer_ip, peer_weight):
+    #     """
+    #     Helper function to send a single gossip message to a peer, simulating latency.
+    #     This is now an async function.
+    #     """
+    #     send_timestamp = time.time_ns()
+    #     try:
+    #         # Introduce latency here: use asyncio.sleep for non-blocking delay
+    #         await asyncio.sleep(int(peer_weight) / 1000)  # peer_weight is in ms, asyncio.sleep expects seconds
+    #
+    #         # Use grpc.aio.insecure_channel for asynchronous channel
+    #         async with grpc.aio.insecure_channel(f"{peer_ip}:5050") as channel:
+    #             stub = gossip_pb2_grpc.GossipServiceStub(channel)
+    #             # Await the asynchronous SendMessage call
+    #             await stub.SendMessage(gossip_pb2.GossipMessage(
+    #                 message=message,
+    #                 sender_id=self.host,
+    #                 timestamp=send_timestamp,
+    #                 latency_ms=peer_weight
+    #             ))
+    #     except grpc.aio.AioRpcError as e:  # Catch gRPC AIO specific errors
+    #         print(f"Failed to send message: '{message}' to {peer_ip}: RPC Error Code {e.code()} - {e.details()}",
+    #               flush=True)
+    #     except Exception as e:
+    #         print(f"Unexpected error when sending message to {peer_ip}: {str(e)}", flush=True)
 
     async def gossip_message(self, message, sender_ip):
         """
