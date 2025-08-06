@@ -1,16 +1,18 @@
-import grpc
+import asyncio  # Import asyncio for asynchronous programming
+import grpc.aio  # Import the async version of gRPC
 import os
 import socket
-from concurrent import futures
+from concurrent import futures  # Still used for the gRPC server's thread pool, but not for outbound gossip
 import gossip_pb2
 import gossip_pb2_grpc
 import json
 import time
 import sqlite3
-from google.protobuf.empty_pb2 import Empty  # <-- Add this import
+from google.protobuf.empty_pb2 import Empty
+
 
 # Define a constant for max concurrent outbound gRPC calls
-MAX_OUTBOUND_GOSSIP_WORKERS = 5
+MAX_CONCURRENT_SENDS = 5
 
 
 class Node(gossip_pb2_grpc.GossipServiceServicer):
@@ -23,25 +25,26 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
         self.app_name = 'bcgossip'
         self.susceptible_nodes = []
         self.received_message_ids = set()
+        self.semaphore = asyncio.Semaphore(MAX_CONCURRENT_SENDS)
 
         # Initialize neighbors on startup - this remains synchronous as DB access is typically synchronous
         self.get_neighbors()
 
-        # Initialize max workers
-        self.executor = futures.ThreadPoolExecutor(max_workers=MAX_OUTBOUND_GOSSIP_WORKERS)
-
     def get_neighbors(self):
+        """
+        Fetches neighbor IPs and their associated weights from ned.db.
+        This remains a synchronous operation as sqlite3 is not inherently async.
+        """
         try:
             conn = sqlite3.connect('ned.db')
             cursor = conn.execute("SELECT pod_ip, weight from NEIGHBORS")
 
-            self.susceptible_nodes = []
+            self.susceptible_nodes = []  # Clear the existing list to refresh it
 
             for row in cursor:
-                self.susceptible_nodes.append((row[0], row[1]))
+                self.susceptible_nodes.append((row[0], row[1]))  # Append as (IP, weight) tuple
             conn.close()
 
-            # Add a log message to confirm the state refresh
             print(f"Neighbors list refreshed from ned.db. Found {len(self.susceptible_nodes)} neighbors.", flush=True)
 
         except sqlite3.Error as e:
@@ -49,23 +52,22 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
         except Exception as e:
             print(f"Unexpected error in get_neighbors: {str(e)}", flush=True)
 
-    def UpdateNeighbors(self, request, context):
+    async def UpdateNeighbors(self, request, context):
         """
         Receives an RPC call to update the neighbor list.
-        The corresponding method on its Node service is executed, which in turn calls self.get_neighbors().
         """
         print("Received UpdateNeighbors signal. Refreshing state...", flush=True)
 
-        # In-Memory State Refresh: Re-read the database and update the neighbor list
         self.get_neighbors()
-
-        # As per the logic, we should also clear the message cache for a new topology run
         self.received_message_ids.clear()
         print(f"Message cache cleared. New topology active.", flush=True)
 
         return gossip_pb2.Acknowledgment(details="Neighbors list and message cache have been updated.")
 
-    def SendMessage(self, request, context):
+    async def SendMessage(self, request, context):
+        """
+        Receiving message from other nodes and distributing it.
+        """
         message = request.message
         sender_id = request.sender_id
         received_timestamp = time.time_ns()
@@ -77,7 +79,8 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
                            f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(received_timestamp / 1e9))}")
             self._log_event(message, sender_id, received_timestamp, None,
                             None, 'initiate', log_message)
-            self.gossip_message(message, sender_id)
+
+            await self.gossip_message(message, sender_id)
             return gossip_pb2.Acknowledgment(details=f"Done propagate! {self.host} received: '{message}'")
 
         elif message in self.received_message_ids:
@@ -93,52 +96,52 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
             self._log_event(message, sender_id, received_timestamp, propagation_time,
                             incoming_link_latency, 'received', log_message)
 
-            self.gossip_message(message, sender_id)
+            await self.gossip_message(message, sender_id)
 
             return gossip_pb2.Acknowledgment(details=f"{self.host} received: '{message}'")
 
-    def _send_gossip_to_peer(self, message, sender_id, peer_ip, peer_weight):
-        """Helper function to send a single gossip message to a peer, simulating latency."""
-        send_timestamp = time.time_ns()
-        try:
-            # Introduce latency here: pause execution for the peer_weight duration
-            # peer_weight is assumed to be in milliseconds, time.sleep expects seconds
-            time.sleep(int(peer_weight) / 1000)  # This line simulates the network latency
-
-            with grpc.insecure_channel(f"{peer_ip}:5050") as channel:
-                stub = gossip_pb2_grpc.GossipServiceStub(channel)
-                stub.SendMessage(gossip_pb2.GossipMessage(
-                    message=message,
-                    sender_id=self.host,
-                    timestamp=send_timestamp,
-                    latency_ms=peer_weight  # This value is passed in the message for the receiver to log
-                ))
-        except grpc.RpcError as e:
-            print(f"Failed to send message: '{message}' to {peer_ip}: RPC Error Code {e.code()} - {e.details()}",
-                  flush=True)
-        except Exception as e:
-            print(f"Unexpected error when sending message to {peer_ip}: {str(e)}", flush=True)
-
-    def gossip_message(self, message, sender_ip):
+    async def _send_gossip_to_peer(self, message, sender_id, peer_ip, peer_weight):
         """
-        Propagates the message to susceptible (neighboring) nodes using a thread pool.
+        Helper function to send a single gossip message to a peer, simulating latency.
+        This is an async function using non-blocking asyncio.sleep.
+        """
+        send_timestamp = time.time_ns()
+
+        # The semaphore is acquired here to respect the concurrency limit
+        async with self.semaphore:
+            try:
+                # Introduce latency here: use asyncio.sleep for non-blocking delay
+                await asyncio.sleep(int(peer_weight) / 1000)
+
+                async with grpc.aio.insecure_channel(f"{peer_ip}:5050") as channel:
+                    stub = gossip_pb2_grpc.GossipServiceStub(channel)
+                    await stub.SendMessage(gossip_pb2.GossipMessage(
+                        message=message,
+                        sender_id=self.host,
+                        timestamp=send_timestamp,
+                        latency_ms=peer_weight
+                    ))
+            except grpc.aio.AioRpcError as e:
+                print(f"Failed to send message: '{message}' to {peer_ip}: RPC Error Code {e.code()} - {e.details()}",
+                      flush=True)
+            except Exception as e:
+                print(f"Unexpected error when sending message to {peer_ip}: {str(e)}", flush=True)
+
+    async def gossip_message(self, message, sender_id):
+        """
+        Propagates the message to susceptible (neighboring) nodes using asyncio tasks.
         """
         if not self.susceptible_nodes:
             self.get_neighbors()
-            # For topology debugging or info
-            print(f"self.susceptible_nodes: {self.susceptible_nodes}", flush=True)
 
-        futures_list = []
+        tasks = []
         for peer_ip, peer_weight in self.susceptible_nodes:
-            if peer_ip != sender_ip:
-                future = self.executor.submit(self._send_gossip_to_peer, message, sender_ip, peer_ip, peer_weight)
-                futures_list.append(future)
+            if peer_ip != sender_id:
+                task = asyncio.create_task(self._send_gossip_to_peer(message, sender_id, peer_ip, peer_weight))
+                tasks.append(task)
 
-        for future in futures_list:
-            try:
-                future.result()
-            except Exception:
-                pass
+        await asyncio.gather(*tasks,
+                             return_exceptions=True)
 
     def _log_event(self, message, sender_id, received_timestamp, propagation_time, incoming_link_latency, event_type,
                    log_message):
@@ -156,21 +159,22 @@ class Node(gossip_pb2_grpc.GossipServiceServicer):
 
         print(json.dumps(event_data), flush=True)
 
-    def start_server(self):
-        """ Initiating gRPC server """
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    async def start_server(self):
+        """ Initiating asynchronous gRPC server """
+        server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
         gossip_pb2_grpc.add_GossipServiceServicer_to_server(self, server)
         server.add_insecure_port(f'[::]:{self.port}')
         print(f"{self.hostname}({self.host}) listening on port {self.port}", flush=True)
-        server.start()
-        server.wait_for_termination()
+
+        await server.start()
+        await server.wait_for_termination()
 
 
-def run_server():
+async def run_server_async():
     service_name = os.getenv('SERVICE_NAME', 'bcgossip-svc')
     node = Node(service_name)
-    node.start_server()
+    await node.start_server()
 
 
 if __name__ == '__main__':
-    run_server()
+    asyncio.run(run_server_async())
