@@ -1,0 +1,1734 @@
+{
+    "directed": false,
+    "multigraph": false,
+    "total_clusters": 10,
+    "total_nodes": 50,
+    "total_edges": 304,
+    "weight_average": 22.4375,
+    "total_clustering_time_ms": "179.55804",
+    "graph": {},
+    "nodes": [
+        {
+            "id": "gossip-0",
+            "cluster": 0
+        },
+        {
+            "id": "gossip-15",
+            "cluster": 0
+        },
+        {
+            "id": "gossip-21",
+            "cluster": 0
+        },
+        {
+            "id": "gossip-27",
+            "cluster": 0
+        },
+        {
+            "id": "gossip-33",
+            "cluster": 0
+        },
+        {
+            "id": "gossip-36",
+            "cluster": 0
+        },
+        {
+            "id": "gossip-48",
+            "cluster": 0
+        },
+        {
+            "id": "gossip-1",
+            "cluster": 0
+        },
+        {
+            "id": "gossip-23",
+            "cluster": 1
+        },
+        {
+            "id": "gossip-31",
+            "cluster": 1
+        },
+        {
+            "id": "gossip-32",
+            "cluster": 1
+        },
+        {
+            "id": "gossip-43",
+            "cluster": 1
+        },
+        {
+            "id": "gossip-45",
+            "cluster": 1
+        },
+        {
+            "id": "gossip-10",
+            "cluster": 2
+        },
+        {
+            "id": "gossip-24",
+            "cluster": 2
+        },
+        {
+            "id": "gossip-41",
+            "cluster": 2
+        },
+        {
+            "id": "gossip-47",
+            "cluster": 2
+        },
+        {
+            "id": "gossip-3",
+            "cluster": 3
+        },
+        {
+            "id": "gossip-6",
+            "cluster": 3
+        },
+        {
+            "id": "gossip-8",
+            "cluster": 3
+        },
+        {
+            "id": "gossip-14",
+            "cluster": 3
+        },
+        {
+            "id": "gossip-16",
+            "cluster": 3
+        },
+        {
+            "id": "gossip-25",
+            "cluster": 3
+        },
+        {
+            "id": "gossip-46",
+            "cluster": 3
+        },
+        {
+            "id": "gossip-4",
+            "cluster": 4
+        },
+        {
+            "id": "gossip-13",
+            "cluster": 4
+        },
+        {
+            "id": "gossip-26",
+            "cluster": 4
+        },
+        {
+            "id": "gossip-28",
+            "cluster": 4
+        },
+        {
+            "id": "gossip-34",
+            "cluster": 4
+        },
+        {
+            "id": "gossip-37",
+            "cluster": 4
+        },
+        {
+            "id": "gossip-38",
+            "cluster": 4
+        },
+        {
+            "id": "gossip-2",
+            "cluster": 5
+        },
+        {
+            "id": "gossip-17",
+            "cluster": 5
+        },
+        {
+            "id": "gossip-30",
+            "cluster": 5
+        },
+        {
+            "id": "gossip-35",
+            "cluster": 5
+        },
+        {
+            "id": "gossip-40",
+            "cluster": 5
+        },
+        {
+            "id": "gossip-44",
+            "cluster": 5
+        },
+        {
+            "id": "gossip-49",
+            "cluster": 5
+        },
+        {
+            "id": "gossip-5",
+            "cluster": 6
+        },
+        {
+            "id": "gossip-22",
+            "cluster": 6
+        },
+        {
+            "id": "gossip-29",
+            "cluster": 6
+        },
+        {
+            "id": "gossip-39",
+            "cluster": 6
+        },
+        {
+            "id": "gossip-7",
+            "cluster": 7
+        },
+        {
+            "id": "gossip-11",
+            "cluster": 8
+        },
+        {
+            "id": "gossip-12",
+            "cluster": 8
+        },
+        {
+            "id": "gossip-18",
+            "cluster": 8
+        },
+        {
+            "id": "gossip-19",
+            "cluster": 8
+        },
+        {
+            "id": "gossip-20",
+            "cluster": 8
+        },
+        {
+            "id": "gossip-42",
+            "cluster": 8
+        },
+        {
+            "id": "gossip-9",
+            "cluster": 9
+        }
+    ],
+    "edges": [
+        {
+            "source": "gossip-0",
+            "target": "gossip-15",
+            "weight": 29
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-21",
+            "weight": 10
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-27",
+            "weight": 11
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-36",
+            "weight": 10
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-1",
+            "weight": 20
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-18",
+            "weight": 13
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-32",
+            "weight": 35
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-13",
+            "weight": 13
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-11",
+            "weight": 17
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-10",
+            "weight": 19
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-24",
+            "weight": 13
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-41",
+            "weight": 27
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-47",
+            "weight": 28
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-6",
+            "weight": 26
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-8",
+            "weight": 29
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-14",
+            "weight": 27
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-16",
+            "weight": 18
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-25",
+            "weight": 23
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-28",
+            "weight": 15
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-34",
+            "weight": 31
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-17",
+            "weight": 26
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-44",
+            "weight": 29
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-42",
+            "weight": 21
+        },
+        {
+            "source": "gossip-0",
+            "target": "gossip-9",
+            "weight": 22
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-21",
+            "weight": 10
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-27",
+            "weight": 13
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-33",
+            "weight": 12
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-36",
+            "weight": 16
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-44",
+            "weight": 11
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-43",
+            "weight": 25
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-13",
+            "weight": 12
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-41",
+            "weight": 29
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-3",
+            "weight": 26
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-6",
+            "weight": 20
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-8",
+            "weight": 32
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-46",
+            "weight": 22
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-40",
+            "weight": 13
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-4",
+            "weight": 15
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-22",
+            "weight": 16
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-30",
+            "weight": 13
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-49",
+            "weight": 11
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-5",
+            "weight": 27
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-11",
+            "weight": 22
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-12",
+            "weight": 20
+        },
+        {
+            "source": "gossip-15",
+            "target": "gossip-42",
+            "weight": 32
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-27",
+            "weight": 15
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-33",
+            "weight": 33
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-48",
+            "weight": 15
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-23",
+            "weight": 27
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-20",
+            "weight": 13
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-5",
+            "weight": 17
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-18",
+            "weight": 11
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-46",
+            "weight": 25
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-26",
+            "weight": 15
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-38",
+            "weight": 35
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-30",
+            "weight": 22
+        },
+        {
+            "source": "gossip-21",
+            "target": "gossip-29",
+            "weight": 13
+        },
+        {
+            "source": "gossip-27",
+            "target": "gossip-6",
+            "weight": 21
+        },
+        {
+            "source": "gossip-27",
+            "target": "gossip-12",
+            "weight": 13
+        },
+        {
+            "source": "gossip-27",
+            "target": "gossip-45",
+            "weight": 24
+        },
+        {
+            "source": "gossip-27",
+            "target": "gossip-7",
+            "weight": 30
+        },
+        {
+            "source": "gossip-27",
+            "target": "gossip-11",
+            "weight": 25
+        },
+        {
+            "source": "gossip-33",
+            "target": "gossip-1",
+            "weight": 25
+        },
+        {
+            "source": "gossip-33",
+            "target": "gossip-47",
+            "weight": 23
+        },
+        {
+            "source": "gossip-33",
+            "target": "gossip-11",
+            "weight": 12
+        },
+        {
+            "source": "gossip-33",
+            "target": "gossip-17",
+            "weight": 20
+        },
+        {
+            "source": "gossip-33",
+            "target": "gossip-3",
+            "weight": 30
+        },
+        {
+            "source": "gossip-33",
+            "target": "gossip-16",
+            "weight": 34
+        },
+        {
+            "source": "gossip-33",
+            "target": "gossip-5",
+            "weight": 22
+        },
+        {
+            "source": "gossip-36",
+            "target": "gossip-48",
+            "weight": 23
+        },
+        {
+            "source": "gossip-36",
+            "target": "gossip-3",
+            "weight": 10
+        },
+        {
+            "source": "gossip-36",
+            "target": "gossip-22",
+            "weight": 18
+        },
+        {
+            "source": "gossip-36",
+            "target": "gossip-11",
+            "weight": 17
+        },
+        {
+            "source": "gossip-36",
+            "target": "gossip-41",
+            "weight": 30
+        },
+        {
+            "source": "gossip-36",
+            "target": "gossip-12",
+            "weight": 31
+        },
+        {
+            "source": "gossip-36",
+            "target": "gossip-42",
+            "weight": 17
+        },
+        {
+            "source": "gossip-48",
+            "target": "gossip-47",
+            "weight": 18
+        },
+        {
+            "source": "gossip-48",
+            "target": "gossip-12",
+            "weight": 10
+        },
+        {
+            "source": "gossip-48",
+            "target": "gossip-25",
+            "weight": 10
+        },
+        {
+            "source": "gossip-48",
+            "target": "gossip-28",
+            "weight": 16
+        },
+        {
+            "source": "gossip-48",
+            "target": "gossip-17",
+            "weight": 33
+        },
+        {
+            "source": "gossip-48",
+            "target": "gossip-39",
+            "weight": 30
+        },
+        {
+            "source": "gossip-1",
+            "target": "gossip-23",
+            "weight": 18
+        },
+        {
+            "source": "gossip-1",
+            "target": "gossip-26",
+            "weight": 15
+        },
+        {
+            "source": "gossip-1",
+            "target": "gossip-14",
+            "weight": 35
+        },
+        {
+            "source": "gossip-1",
+            "target": "gossip-25",
+            "weight": 33
+        },
+        {
+            "source": "gossip-1",
+            "target": "gossip-28",
+            "weight": 35
+        },
+        {
+            "source": "gossip-1",
+            "target": "gossip-38",
+            "weight": 39
+        },
+        {
+            "source": "gossip-1",
+            "target": "gossip-19",
+            "weight": 27
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-31",
+            "weight": 13
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-32",
+            "weight": 14
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-43",
+            "weight": 32
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-45",
+            "weight": 20
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-18",
+            "weight": 19
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-47",
+            "weight": 11
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-3",
+            "weight": 31
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-37",
+            "weight": 15
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-35",
+            "weight": 30
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-19",
+            "weight": 21
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-5",
+            "weight": 33
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-29",
+            "weight": 33
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-11",
+            "weight": 31
+        },
+        {
+            "source": "gossip-23",
+            "target": "gossip-20",
+            "weight": 27
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-18",
+            "weight": 18
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-20",
+            "weight": 15
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-6",
+            "weight": 19
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-3",
+            "weight": 32
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-34",
+            "weight": 24
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-19",
+            "weight": 18
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-26",
+            "weight": 31
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-28",
+            "weight": 29
+        },
+        {
+            "source": "gossip-31",
+            "target": "gossip-22",
+            "weight": 27
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-44",
+            "weight": 21
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-5",
+            "weight": 24
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-12",
+            "weight": 18
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-22",
+            "weight": 18
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-14",
+            "weight": 21
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-16",
+            "weight": 26
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-34",
+            "weight": 14
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-28",
+            "weight": 33
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-38",
+            "weight": 22
+        },
+        {
+            "source": "gossip-32",
+            "target": "gossip-29",
+            "weight": 28
+        },
+        {
+            "source": "gossip-43",
+            "target": "gossip-13",
+            "weight": 17
+        },
+        {
+            "source": "gossip-43",
+            "target": "gossip-18",
+            "weight": 22
+        },
+        {
+            "source": "gossip-43",
+            "target": "gossip-6",
+            "weight": 17
+        },
+        {
+            "source": "gossip-43",
+            "target": "gossip-37",
+            "weight": 11
+        },
+        {
+            "source": "gossip-43",
+            "target": "gossip-41",
+            "weight": 12
+        },
+        {
+            "source": "gossip-43",
+            "target": "gossip-30",
+            "weight": 24
+        },
+        {
+            "source": "gossip-43",
+            "target": "gossip-20",
+            "weight": 28
+        },
+        {
+            "source": "gossip-45",
+            "target": "gossip-11",
+            "weight": 17
+        },
+        {
+            "source": "gossip-45",
+            "target": "gossip-20",
+            "weight": 20
+        },
+        {
+            "source": "gossip-45",
+            "target": "gossip-37",
+            "weight": 27
+        },
+        {
+            "source": "gossip-45",
+            "target": "gossip-4",
+            "weight": 27
+        },
+        {
+            "source": "gossip-45",
+            "target": "gossip-13",
+            "weight": 28
+        },
+        {
+            "source": "gossip-45",
+            "target": "gossip-44",
+            "weight": 38
+        },
+        {
+            "source": "gossip-45",
+            "target": "gossip-35",
+            "weight": 22
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-24",
+            "weight": 12
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-41",
+            "weight": 13
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-47",
+            "weight": 10
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-13",
+            "weight": 23
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-11",
+            "weight": 18
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-25",
+            "weight": 16
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-28",
+            "weight": 30
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-35",
+            "weight": 18
+        },
+        {
+            "source": "gossip-10",
+            "target": "gossip-12",
+            "weight": 23
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-11",
+            "weight": 24
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-12",
+            "weight": 20
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-37",
+            "weight": 18
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-18",
+            "weight": 16
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-3",
+            "weight": 17
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-14",
+            "weight": 26
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-2",
+            "weight": 16
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-17",
+            "weight": 22
+        },
+        {
+            "source": "gossip-24",
+            "target": "gossip-22",
+            "weight": 28
+        },
+        {
+            "source": "gossip-41",
+            "target": "gossip-17",
+            "weight": 13
+        },
+        {
+            "source": "gossip-41",
+            "target": "gossip-20",
+            "weight": 28
+        },
+        {
+            "source": "gossip-41",
+            "target": "gossip-14",
+            "weight": 33
+        },
+        {
+            "source": "gossip-41",
+            "target": "gossip-28",
+            "weight": 38
+        },
+        {
+            "source": "gossip-41",
+            "target": "gossip-19",
+            "weight": 34
+        },
+        {
+            "source": "gossip-47",
+            "target": "gossip-14",
+            "weight": 12
+        },
+        {
+            "source": "gossip-47",
+            "target": "gossip-19",
+            "weight": 18
+        },
+        {
+            "source": "gossip-47",
+            "target": "gossip-42",
+            "weight": 22
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-14",
+            "weight": 11
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-16",
+            "weight": 11
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-46",
+            "weight": 37
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-12",
+            "weight": 21
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-11",
+            "weight": 22
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-17",
+            "weight": 23
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-13",
+            "weight": 23
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-30",
+            "weight": 22
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-39",
+            "weight": 29
+        },
+        {
+            "source": "gossip-3",
+            "target": "gossip-19",
+            "weight": 33
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-14",
+            "weight": 32
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-16",
+            "weight": 16
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-25",
+            "weight": 19
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-26",
+            "weight": 20
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-22",
+            "weight": 21
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-11",
+            "weight": 27
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-13",
+            "weight": 29
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-34",
+            "weight": 37
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-40",
+            "weight": 25
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-17",
+            "weight": 36
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-35",
+            "weight": 36
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-18",
+            "weight": 37
+        },
+        {
+            "source": "gossip-6",
+            "target": "gossip-42",
+            "weight": 33
+        },
+        {
+            "source": "gossip-8",
+            "target": "gossip-16",
+            "weight": 13
+        },
+        {
+            "source": "gossip-8",
+            "target": "gossip-25",
+            "weight": 25
+        },
+        {
+            "source": "gossip-8",
+            "target": "gossip-12",
+            "weight": 23
+        },
+        {
+            "source": "gossip-8",
+            "target": "gossip-37",
+            "weight": 11
+        },
+        {
+            "source": "gossip-8",
+            "target": "gossip-11",
+            "weight": 38
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-16",
+            "weight": 15
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-25",
+            "weight": 11
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-46",
+            "weight": 11
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-37",
+            "weight": 13
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-20",
+            "weight": 15
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-12",
+            "weight": 14
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-38",
+            "weight": 10
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-34",
+            "weight": 32
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-40",
+            "weight": 22
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-30",
+            "weight": 22
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-2",
+            "weight": 30
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-19",
+            "weight": 29
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-49",
+            "weight": 38
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-29",
+            "weight": 32
+        },
+        {
+            "source": "gossip-14",
+            "target": "gossip-18",
+            "weight": 28
+        },
+        {
+            "source": "gossip-16",
+            "target": "gossip-40",
+            "weight": 21
+        },
+        {
+            "source": "gossip-16",
+            "target": "gossip-28",
+            "weight": 16
+        },
+        {
+            "source": "gossip-16",
+            "target": "gossip-26",
+            "weight": 18
+        },
+        {
+            "source": "gossip-16",
+            "target": "gossip-11",
+            "weight": 32
+        },
+        {
+            "source": "gossip-16",
+            "target": "gossip-2",
+            "weight": 29
+        },
+        {
+            "source": "gossip-16",
+            "target": "gossip-7",
+            "weight": 11
+        },
+        {
+            "source": "gossip-16",
+            "target": "gossip-18",
+            "weight": 31
+        },
+        {
+            "source": "gossip-16",
+            "target": "gossip-19",
+            "weight": 30
+        },
+        {
+            "source": "gossip-25",
+            "target": "gossip-28",
+            "weight": 14
+        },
+        {
+            "source": "gossip-25",
+            "target": "gossip-34",
+            "weight": 28
+        },
+        {
+            "source": "gossip-25",
+            "target": "gossip-13",
+            "weight": 34
+        },
+        {
+            "source": "gossip-25",
+            "target": "gossip-49",
+            "weight": 28
+        },
+        {
+            "source": "gossip-25",
+            "target": "gossip-22",
+            "weight": 25
+        },
+        {
+            "source": "gossip-46",
+            "target": "gossip-11",
+            "weight": 22
+        },
+        {
+            "source": "gossip-46",
+            "target": "gossip-17",
+            "weight": 31
+        },
+        {
+            "source": "gossip-46",
+            "target": "gossip-35",
+            "weight": 24
+        },
+        {
+            "source": "gossip-46",
+            "target": "gossip-5",
+            "weight": 28
+        },
+        {
+            "source": "gossip-46",
+            "target": "gossip-42",
+            "weight": 31
+        },
+        {
+            "source": "gossip-4",
+            "target": "gossip-13",
+            "weight": 10
+        },
+        {
+            "source": "gossip-4",
+            "target": "gossip-26",
+            "weight": 12
+        },
+        {
+            "source": "gossip-4",
+            "target": "gossip-28",
+            "weight": 11
+        },
+        {
+            "source": "gossip-4",
+            "target": "gossip-34",
+            "weight": 12
+        },
+        {
+            "source": "gossip-4",
+            "target": "gossip-37",
+            "weight": 19
+        },
+        {
+            "source": "gossip-4",
+            "target": "gossip-38",
+            "weight": 16
+        },
+        {
+            "source": "gossip-4",
+            "target": "gossip-22",
+            "weight": 29
+        },
+        {
+            "source": "gossip-4",
+            "target": "gossip-11",
+            "weight": 25
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-37",
+            "weight": 12
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-19",
+            "weight": 16
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-35",
+            "weight": 16
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-2",
+            "weight": 33
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-17",
+            "weight": 31
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-5",
+            "weight": 38
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-22",
+            "weight": 24
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-12",
+            "weight": 28
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-20",
+            "weight": 30
+        },
+        {
+            "source": "gossip-13",
+            "target": "gossip-42",
+            "weight": 29
+        },
+        {
+            "source": "gossip-26",
+            "target": "gossip-37",
+            "weight": 14
+        },
+        {
+            "source": "gossip-26",
+            "target": "gossip-11",
+            "weight": 21
+        },
+        {
+            "source": "gossip-26",
+            "target": "gossip-2",
+            "weight": 39
+        },
+        {
+            "source": "gossip-26",
+            "target": "gossip-12",
+            "weight": 25
+        },
+        {
+            "source": "gossip-28",
+            "target": "gossip-37",
+            "weight": 28
+        },
+        {
+            "source": "gossip-28",
+            "target": "gossip-11",
+            "weight": 18
+        },
+        {
+            "source": "gossip-28",
+            "target": "gossip-39",
+            "weight": 40
+        },
+        {
+            "source": "gossip-34",
+            "target": "gossip-18",
+            "weight": 21
+        },
+        {
+            "source": "gossip-34",
+            "target": "gossip-12",
+            "weight": 28
+        },
+        {
+            "source": "gossip-34",
+            "target": "gossip-5",
+            "weight": 36
+        },
+        {
+            "source": "gossip-37",
+            "target": "gossip-11",
+            "weight": 35
+        },
+        {
+            "source": "gossip-38",
+            "target": "gossip-11",
+            "weight": 13
+        },
+        {
+            "source": "gossip-38",
+            "target": "gossip-22",
+            "weight": 14
+        },
+        {
+            "source": "gossip-38",
+            "target": "gossip-40",
+            "weight": 27
+        },
+        {
+            "source": "gossip-2",
+            "target": "gossip-17",
+            "weight": 36
+        },
+        {
+            "source": "gossip-2",
+            "target": "gossip-44",
+            "weight": 11
+        },
+        {
+            "source": "gossip-2",
+            "target": "gossip-12",
+            "weight": 23
+        },
+        {
+            "source": "gossip-2",
+            "target": "gossip-11",
+            "weight": 36
+        },
+        {
+            "source": "gossip-17",
+            "target": "gossip-30",
+            "weight": 24
+        },
+        {
+            "source": "gossip-17",
+            "target": "gossip-44",
+            "weight": 12
+        },
+        {
+            "source": "gossip-17",
+            "target": "gossip-11",
+            "weight": 17
+        },
+        {
+            "source": "gossip-17",
+            "target": "gossip-18",
+            "weight": 16
+        },
+        {
+            "source": "gossip-17",
+            "target": "gossip-5",
+            "weight": 37
+        },
+        {
+            "source": "gossip-30",
+            "target": "gossip-35",
+            "weight": 14
+        },
+        {
+            "source": "gossip-30",
+            "target": "gossip-49",
+            "weight": 25
+        },
+        {
+            "source": "gossip-30",
+            "target": "gossip-20",
+            "weight": 22
+        },
+        {
+            "source": "gossip-30",
+            "target": "gossip-22",
+            "weight": 15
+        },
+        {
+            "source": "gossip-30",
+            "target": "gossip-11",
+            "weight": 26
+        },
+        {
+            "source": "gossip-35",
+            "target": "gossip-40",
+            "weight": 32
+        },
+        {
+            "source": "gossip-35",
+            "target": "gossip-18",
+            "weight": 21
+        },
+        {
+            "source": "gossip-35",
+            "target": "gossip-12",
+            "weight": 28
+        },
+        {
+            "source": "gossip-35",
+            "target": "gossip-19",
+            "weight": 31
+        },
+        {
+            "source": "gossip-40",
+            "target": "gossip-11",
+            "weight": 33
+        },
+        {
+            "source": "gossip-40",
+            "target": "gossip-22",
+            "weight": 25
+        },
+        {
+            "source": "gossip-40",
+            "target": "gossip-20",
+            "weight": 34
+        },
+        {
+            "source": "gossip-44",
+            "target": "gossip-19",
+            "weight": 10
+        },
+        {
+            "source": "gossip-49",
+            "target": "gossip-19",
+            "weight": 20
+        },
+        {
+            "source": "gossip-5",
+            "target": "gossip-39",
+            "weight": 21
+        },
+        {
+            "source": "gossip-5",
+            "target": "gossip-12",
+            "weight": 18
+        },
+        {
+            "source": "gossip-5",
+            "target": "gossip-11",
+            "weight": 25
+        },
+        {
+            "source": "gossip-22",
+            "target": "gossip-29",
+            "weight": 19
+        },
+        {
+            "source": "gossip-22",
+            "target": "gossip-39",
+            "weight": 10
+        },
+        {
+            "source": "gossip-22",
+            "target": "gossip-12",
+            "weight": 13
+        },
+        {
+            "source": "gossip-22",
+            "target": "gossip-11",
+            "weight": 20
+        },
+        {
+            "source": "gossip-29",
+            "target": "gossip-19",
+            "weight": 18
+        },
+        {
+            "source": "gossip-29",
+            "target": "gossip-12",
+            "weight": 29
+        },
+        {
+            "source": "gossip-29",
+            "target": "gossip-42",
+            "weight": 33
+        },
+        {
+            "source": "gossip-39",
+            "target": "gossip-18",
+            "weight": 12
+        },
+        {
+            "source": "gossip-39",
+            "target": "gossip-19",
+            "weight": 18
+        },
+        {
+            "source": "gossip-7",
+            "target": "gossip-11",
+            "weight": 32
+        },
+        {
+            "source": "gossip-7",
+            "target": "gossip-12",
+            "weight": 31
+        },
+        {
+            "source": "gossip-11",
+            "target": "gossip-12",
+            "weight": 28
+        },
+        {
+            "source": "gossip-11",
+            "target": "gossip-18",
+            "weight": 15
+        },
+        {
+            "source": "gossip-11",
+            "target": "gossip-19",
+            "weight": 17
+        },
+        {
+            "source": "gossip-11",
+            "target": "gossip-20",
+            "weight": 12
+        },
+        {
+            "source": "gossip-11",
+            "target": "gossip-42",
+            "weight": 11
+        },
+        {
+            "source": "gossip-12",
+            "target": "gossip-18",
+            "weight": 16
+        },
+        {
+            "source": "gossip-12",
+            "target": "gossip-19",
+            "weight": 19
+        },
+        {
+            "source": "gossip-12",
+            "target": "gossip-20",
+            "weight": 12
+        },
+        {
+            "source": "gossip-18",
+            "target": "gossip-20",
+            "weight": 40
+        },
+        {
+            "source": "gossip-19",
+            "target": "gossip-20",
+            "weight": 14
+        },
+        {
+            "source": "gossip-19",
+            "target": "gossip-42",
+            "weight": 22
+        },
+        {
+            "source": "gossip-20",
+            "target": "gossip-42",
+            "weight": 13
+        }
+    ]
+}
