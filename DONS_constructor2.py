@@ -1,69 +1,66 @@
-# dons_network_converter.py
+# dons_ba_er_generator.py
 
 import json
-import os
-import sys
+import random
 import argparse
+import sys
+import os
 import heapq
-import time
+import networkx as nx
 
-def load_topology_from_json(json_file_path: str, topology_dir="topology") -> dict:
+def generate_base_topology(graph_type: str, num_nodes: int, **kwargs) -> dict:
     """
-    Loads a network topology from a JSON file and prepares it for processing.
+    Generates a base network topology using a specified graph model.
 
     Args:
-        json_file_path (str): Path to the input JSON file.
+        graph_type (str): Type of graph to generate ('ER' or 'BA').
+        num_nodes (int): The number of nodes in the network.
+        **kwargs: Additional keyword arguments for the graph generation.
 
     Returns:
-        dict: A dictionary containing the number of nodes and the adjacency list.
+        dict: The adjacency list of the generated graph.
     """
-    
-    # Get current file and path
-    json_file_path = os.path.join(topology_dir, json_file_path)
-    
-    try:
-        with open(json_file_path, 'r') as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        print(f"Error: The file '{json_file_path}' was not found.")
+    if graph_type.upper() == 'ER':
+        # p is the probability of an edge existing
+        p = kwargs.get('p', 0.2)
+        print(f"Generating an ER graph with num_nodes={num_nodes}, p={p}...")
+        graph = nx.gnp_random_graph(num_nodes, p)
+    elif graph_type.upper() == 'BA':
+        # m is the number of edges to attach from a new node to existing nodes
+        m = kwargs.get('m', 2)
+        print(f"Generating a BA graph with num_nodes={num_nodes}, m={m}...")
+        graph = nx.barabasi_albert_graph(num_nodes, m)
+    else:
+        print("Error: Invalid graph type. Please choose 'ER' or 'BA'.")
         sys.exit(1)
-    except json.JSONDecodeError:
-        print(f"Error: Could not decode JSON from '{json_file_path}'. Please check file format.")
-        sys.exit(1)
-
-    nodes = data.get('nodes', [])
-    edges = data.get('edges', [])
-    num_nodes = len(nodes)
+        
+    # Assign random RTT weights to edges
+    min_rtt = kwargs.get('min_rtt', 10)
+    max_rtt = kwargs.get('max_rtt', 100)
+    for u, v in graph.edges():
+        rtt = random.randint(min_rtt, max_rtt)
+        graph[u][v]['weight'] = rtt
+        
+    # Convert to a format that our functions can use
     adj_list = {i: {} for i in range(num_nodes)}
-    id_to_index = {node['id']: i for i, node in enumerate(nodes)}
-    index_to_id = {i: node['id'] for i, node in enumerate(nodes)}
-
-    for edge in edges:
-        source_id = edge['source']
-        target_id = edge['target']
-        weight = edge.get('weight', 1)  # Default weight to 1 if not specified
+    for u, v, data in graph.edges(data=True):
+        weight = data['weight']
+        adj_list[u][v] = weight
+        adj_list[v][u] = weight
         
-        source_index = id_to_index.get(source_id)
-        target_index = id_to_index.get(target_id)
-        
-        if source_index is not None and target_index is not None:
-            adj_list[source_index][target_index] = weight
-            adj_list[target_index][source_index] = weight
-
-    if num_nodes == 0:
-        print("Error: The input JSON file contains no nodes.")
-        sys.exit(1)
-        
-    return {'num_nodes': num_nodes, 'adj_list': adj_list, 'original_data': data, 'index_to_id': index_to_id, 'id_to_index': id_to_index}
-
+    # Check if the graph is connected
+    if num_nodes > 0 and not nx.is_connected(graph):
+        print("Warning: The generated graph is not connected. "
+              "Consider increasing parameters (p for ER, m for BA).")
+    
+    return adj_list
 
 def prims_mst_edges(num_nodes: int, adj_list: dict) -> list:
     """
     Computes the edges of the Minimum Spanning Tree (MST) using Prim's algorithm.
-    This simulates the DONS leader's role in finding the most efficient path.
 
     Args:
-        num_nodes (int): The total number of nodes in the graph.
+        num_nodes (int): The number of nodes in the graph.
         adj_list (dict): The adjacency list of the graph.
 
     Returns:
@@ -73,26 +70,22 @@ def prims_mst_edges(num_nodes: int, adj_list: dict) -> list:
         return []
 
     mst = []
-    # Using a set of node indices for visited tracking
-    visited_indices = {0} # Start from node index 0
-    min_heap = []
+    visited = [False] * num_nodes
+    min_heap = [(0, 0, -1)]  # (weight, node, parent)
 
-    # Initialize the heap with edges from the starting node (index 0)
-    for neighbor, weight in adj_list.get(0, {}).items():
-        heapq.heappush(min_heap, (weight, 0, neighbor))
+    while min_heap and len(mst) < num_nodes - 1:
+        weight, u, parent = heapq.heappop(min_heap)
 
-    while min_heap and len(visited_indices) < num_nodes:
-        weight, u_idx, v_idx = heapq.heappop(min_heap)
-
-        if v_idx in visited_indices:
+        if visited[u]:
             continue
 
-        visited_indices.add(v_idx)
-        mst.append((u_idx, v_idx, weight))
+        visited[u] = True
+        if parent != -1:
+            mst.append((parent, u, weight))
 
-        for neighbor, edge_weight in adj_list.get(v_idx, {}).items():
-            if neighbor not in visited_indices:
-                heapq.heappush(min_heap, (edge_weight, v_idx, neighbor))
+        for v, edge_weight in adj_list[u].items():
+            if not visited[v]:
+                heapq.heappush(min_heap, (edge_weight, v, u))
 
     if len(mst) != num_nodes - 1 and num_nodes > 1:
         print("Warning: The graph is not fully connected, MST is incomplete.")
@@ -102,10 +95,9 @@ def prims_mst_edges(num_nodes: int, adj_list: dict) -> list:
 def find_ons(num_nodes: int, mst_edges: list) -> dict:
     """
     Finds the Optimized Neighbor Set (ONS) for each node from the MST.
-    This simulates each node processing the broadcasted MST.
 
     Args:
-        num_nodes (int): The total number of nodes.
+        num_nodes (int): The number of nodes.
         mst_edges (list): The edges of the MST.
 
     Returns:
@@ -117,81 +109,69 @@ def find_ons(num_nodes: int, mst_edges: list) -> dict:
         ons_sets[v][u] = weight
     return ons_sets
 
-def create_output_json(file_path: str, original_data: dict, ons_sets: dict, ons_computation_time_ms: float, topology_dir="topology"):
+def create_topology_json(file_path: str, full_topology: dict, nodes_ons: dict, graph_type: str, num_nodes: int):
     """
-    Saves the original topology data along with the calculated ONS to a new JSON file.
-
-    Args:
-        file_path (str): The path to save the output JSON file.
-        original_data (dict): The data loaded from the input JSON file.
-        ons_sets (dict): The calculated ONS for each node.
-        ons_computation_time_ms (float): Time taken to compute the ONS.
+    Saves the full topology and the ONS data to a JSON file.
     """
-    # Create a new dictionary to hold the combined data
-    output_data = original_data.copy()
+    nodes = [{"id": i} for i in range(num_nodes)]
+    edges = []
+    
+    processed_edges = set()
+    for u, neighbors in full_topology.items():
+        for v, weight in neighbors.items():
+            if (v, u) not in processed_edges:
+                edges.append({"source": u, "target": v, "weight": weight})
+                processed_edges.add((u, v))
 
-    # Add new metadata fields
-    total_edges = len(output_data.get('edges', []))
-    total_weight = sum(edge.get('weight', 0) for edge in output_data.get('edges', []))
-    weight_average = total_weight / total_edges if total_edges > 0 else 0
+    data = {
+        "directed": False,
+        "multigraph": False,
+        "graph_info": {
+            "type": graph_type.upper(),
+            "num_nodes": num_nodes,
+        },
+        "nodes": nodes,
+        "edges": edges,
+        "ons_sets": nodes_ons
+    }
 
-    output_data['ons_computation_time_ms'] = f"{ons_computation_time_ms:.4f}"
-    output_data['total_nodes'] = len(output_data.get('nodes', []))
-    output_data['total_edges'] = total_edges
-    output_data['weight_average'] = f"{weight_average:.4f}"
-
-    # Get current file and path
-    json_file_path = os.path.join(topology_dir, file_path)
     try:
-        with open(json_file_path, 'w') as f:
-            json.dump(output_data, f, indent=4)
-        print(f"Successfully created DONS-optimized network at: {json_file_path}")
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=4)
+        print(f"Successfully created DONS-optimized {graph_type.upper()} topology file at: {file_path}")
     except Exception as e:
         print(f"Error writing to file {file_path}: {e}")
         sys.exit(1)
 
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Convert an existing BA or ER network to a DONS-optimized model.")
-    parser.add_argument("--input_file", type=str, required=True, help="Path to the input JSON file (BA/ER network).")
-    parser.add_argument("--output_file", type=str, help="Path for the output JSON file.")
+    parser = argparse.ArgumentParser(description="Generate a DONS-optimized network from an ER or BA graph.")
+    parser.add_argument("--graph_type", type=str, choices=['ER', 'BA'], required=True, help="Type of base graph to generate ('ER' or 'BA').")
+    parser.add_argument("--num_nodes", type=int, default=100, help="Number of nodes in the network.")
+    parser.add_argument("--p", type=float, default=0.05, help="Probability 'p' for ER graph.")
+    parser.add_argument("--m", type=int, default=3, help="Number of edges 'm' for BA graph.")
+    parser.add_argument("--min_rtt", type=int, default=10, help="Minimum RTT in milliseconds.")
+    parser.add_argument("--max_rtt", type=int, default=100, help="Maximum RTT in milliseconds.")
+    parser.add_argument("--output_file", type=str, default="topology/dons_optimized_topology.json", help="Output file path.")
     args = parser.parse_args()
 
-    # Load the base topology from the input JSON file
-    topology_data = load_topology_from_json(args.input_file)
-    num_nodes = topology_data['num_nodes']
-    adj_list = topology_data['adj_list']
-    original_data = topology_data['original_data']
-    index_to_id = topology_data['index_to_id']
-    id_to_index = topology_data['id_to_index']
-
-    print(f"Loaded network from '{args.input_file}' with {num_nodes} nodes.")
-
-    # Simulate the DONS leader's work
-    start_time = time.perf_counter()
-    mst_edges = prims_mst_edges(num_nodes, adj_list)
-    nodes_ons = find_ons(num_nodes, mst_edges)
-    end_time = time.perf_counter()
-    ons_computation_time_ms = (end_time - start_time) * 1000
-
-    print("MST and ONS computation complete.")
-
-    # Determine the output file path
-    if args.output_file:
-        output_file_path = args.output_file
-    else:
-        # Replicates AC file naming convention
-        dir_name = os.path.dirname(args.input_file)
-        file_name, file_extension = os.path.splitext(os.path.basename(args.input_file))
-        output_file_path = os.path.join(dir_name, f"{file_name}_ons{file_extension}")
-        print(f"No output file specified. Defaulting to: {output_file_path}")
-    
-    # Ensure output directory exists
-    output_dir = os.path.dirname(output_file_path)
+    # Ensure the output directory exists
+    output_dir = os.path.dirname(args.output_file)
     if output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Create the final output JSON file
-    create_output_json(output_file_path, original_data, nodes_ons, ons_computation_time_ms)
+    print(f"Generating a base {args.graph_type.upper()} network with {args.num_nodes} nodes...")
+    if args.graph_type.upper() == 'ER':
+        base_topology = generate_base_topology(args.graph_type, args.num_nodes, p=args.p, min_rtt=args.min_rtt, max_rtt=args.max_rtt)
+    else: # BA
+        base_topology = generate_base_topology(args.graph_type, args.num_nodes, m=args.m, min_rtt=args.min_rtt, max_rtt=args.max_rtt)
+
+    print("Computing the Minimum Spanning Tree...")
+    mst_edges = prims_mst_edges(args.num_nodes, base_topology)
     
-    print("DONS optimization complete.")
+    print("Deriving the Optimized Neighbor Set (ONS) for each node...")
+    nodes_ons = find_ons(args.num_nodes, mst_edges)
+
+    print("Creating output JSON file...")
+    create_topology_json(args.output_file, base_topology, nodes_ons, args.graph_type, args.num_nodes)
+
+    print("DONS-optimized topology generation complete.")
