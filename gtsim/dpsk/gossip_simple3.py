@@ -297,7 +297,7 @@ def main():
     print()
     
     # Run multiple trials to get average results
-    num_trials = 5
+    num_trials = 10
     conv_results = []
     game_results = []
     
