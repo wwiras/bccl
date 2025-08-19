@@ -3,6 +3,7 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import deque
+from collections import defaultdict
 
 # --- Configuration ---
 NUM_NODES = 30
@@ -108,6 +109,112 @@ class ConventionalNode(BaseNode):
     pass
 
 class GameTheoryNode(BaseNode):
+    """Game-theoretic node with smarter, gradual punishment."""
+    def __init__(self, node_id, network, initial_stake=100):
+        super().__init__(node_id, network)
+        self.stake = initial_stake
+        self.suspicion_level = defaultdict(int)  # Tracks suspicion per peer
+        self.connection_priority = {}  # Priority for maintaining connections
+        self.message_history = []      # Recent messages to analyze
+
+    def add_peer(self, peer_id):
+        """Override to include connection priority."""
+        if peer_id not in self.peers:
+            self.peers.append(peer_id)
+            # Ensure connection_priority exists before assigning to it
+            if not hasattr(self, 'connection_priority'):
+                self.connection_priority = {}
+            self.connection_priority[peer_id] = 1.0  # Default priority
+
+    def receive_message(self, msg_id, source_id):
+        super().receive_message(msg_id, source_id)
+        
+        if self.is_free_rider:
+            return
+            
+        # Store message info for later analysis
+        self.message_history.append((msg_id, source_id, self.network.step))
+        # Keep only recent history
+        self.message_history = [m for m in self.message_history if self.network.step - m[2] < 10]
+        
+        # Occasionally maintain connections (5% chance per message)
+        if random.random() < 0.05 and hasattr(self, 'maintain_connections'):
+            self.maintain_connections()
+            
+        # Periodically analyze peer behavior (not on every message)
+        if random.random() < 0.2:  # 20% chance to analyze
+            self.analyze_peer_behavior()
+
+    def analyze_peer_behavior(self):
+        """Analyze which peers are not relaying properly."""
+        if not self.message_history:
+            return
+            
+        # Check which peers should have relayed recent messages but didn't
+        recent_msgs = set(msg[0] for msg in self.message_history)
+        
+        for peer_id in self.peers:
+            peer = self.network.nodes[peer_id]
+            # Count how many recent messages the peer should have but doesn't
+            missing_count = sum(1 for msg_id in recent_msgs 
+                              if msg_id not in peer.received_messages)
+            
+            if missing_count > 2:  # Only punish if consistently missing messages
+                self.suspicion_level[peer_id] += 1
+                
+                # Gradual punishment based on suspicion level
+                if self.suspicion_level[peer_id] == 1:
+                    # First offense: just reduce priority
+                    if not hasattr(self, 'connection_priority'):
+                        self.connection_priority = {}
+                    self.connection_priority[peer_id] = self.connection_priority.get(peer_id, 1) - 0.3
+                    #print(f"Node {self.id} reduced priority of {peer_id}")
+                    
+                elif self.suspicion_level[peer_id] >= 3:
+                    # Multiple offenses: consider disconnection
+                    if random.random() < 0.7:  # 70% chance to disconnect
+                        self.punish_peer(peer_id)
+                
+                # Occasionally forgive if network is becoming too sparse
+                if len(self.peers) < 3 and random.random() < 0.4:
+                    self.suspicion_level[peer_id] = max(0, self.suspicion_level[peer_id] - 1)
+
+    def punish_peer(self, peer_id):
+        """Punish a free-riding peer strategically."""
+        if peer_id not in self.peers:
+            return
+            
+        # Only disconnect if we have enough other connections
+        if len(self.peers) > 4:  # Maintain minimum connectivity
+            self.peers.remove(peer_id)
+            peer = self.network.nodes[peer_id]
+            if self.id in peer.peers:
+                peer.peers.remove(self.id)
+            
+            # Slash stake but not too aggressively
+            peer.stake = max(50, peer.stake - 10)  # Don't reduce below 50
+            #print(f"Node {self.id} punished {peer_id}. New stake: {peer.stake}")
+            
+            # Reset suspicion after punishment
+            self.suspicion_level[peer_id] = 0
+
+    def maintain_connections(self):
+        """Ensure we maintain adequate network connectivity."""
+        if len(self.peers) < 4:  # If we have too few connections
+            # Try to reconnect to some previously punished nodes or find new ones
+            all_nodes = list(self.network.nodes.keys())
+            potential_peers = [nid for nid in all_nodes 
+                              if nid != self.id and nid not in self.peers]
+            
+            if potential_peers:
+                # Prefer nodes with higher stake (likely more reliable)
+                potential_peers.sort(key=lambda x: self.network.nodes[x].stake, reverse=True)
+                new_peer = potential_peers[0]  # Connect to the node with highest stake
+                self.add_peer(new_peer)
+                self.network.nodes[new_peer].add_peer(self.id)
+                #print(f"Node {self.id} added new peer {new_peer} for connectivity")
+
+# class GameTheoryNode(BaseNode):
     """Game-theoretic node that identifies and isolates free-riders."""
     def __init__(self, node_id, network, initial_stake=100):
         super().__init__(node_id, network)
